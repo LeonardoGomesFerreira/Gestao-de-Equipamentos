@@ -1,7 +1,6 @@
 drop database if exists  GestaoEquipamentos;
-create database GestaoEquipamentos character set utf8mb4 collate utf8mb4_unicode_ci;
+create database GestaoEquipamentos;
 use GestaoEquipamentos;
-set names utf8mb4;
 
 create table Usuario(
     Id_usuario int not null auto_increment primary key,
