@@ -1,355 +1,268 @@
-# 🛠️ Gestão de Equipamentos
+# Gestão de Equipamentos --- Banco de Dados
 
-> **Banco de dados do projeto “Quem Mexeu Nisso?”**
+## Sobre o projeto
 
-Um banco de dados desenvolvido para **registrar, rastrear e consultar alterações realizadas em objetos e equipamentos compartilhados por diferentes pessoas**.
+Este repositório contém o banco de dados do projeto **Quem Mexeu
+Nisso?**, desenvolvido para registrar e rastrear alterações realizadas
+em objetos e equipamentos compartilhados por diferentes pessoas.
 
----
+O objetivo é responder perguntas como: quem mexeu no equipamento, qual
+ação foi realizada, quando aconteceu, onde estava antes e depois, qual
+era o estado anterior e qual passou a ser o novo estado, além do motivo
+e das observações registradas.
 
-## 🎯 Sobre o projeto
+A proposta é aumentar a **rastreabilidade**, reduzir dúvidas, retrabalho
+e conflitos e manter um histórico das movimentações e alterações
+realizadas nos objetos.
 
-O projeto **Quem Mexeu Nisso?** surgiu a partir de um problema comum em ambientes onde várias pessoas utilizam os mesmos equipamentos:
+## Tecnologias
 
-> **Quando algo muda, quebra, desaparece ou é alterado, nem sempre é possível saber quem fez, quando fez ou o que aconteceu.**
+-   MySQL
+-   MySQL Workbench
+-   SQL
 
-O banco de dados foi estruturado para solucionar a parte de **rastreabilidade e histórico**, permitindo registrar:
+## Estrutura do banco
 
-- 👤 Quem realizou a ação
-- 🛠️ O que foi feito
-- 📦 Qual objeto foi alterado
-- 📍 Onde estava e para onde foi
-- 🔄 Qual era o estado anterior e o novo estado
-- 📝 Motivo e observações
-- 🕐 Data e hora da ocorrência
+O banco utilizado neste projeto é `GestaoEquipamentos`.
 
----
+Ele foi estruturado utilizando **Primary Keys (PKs)**, **Foreign Keys
+(FKs)**, índices, triggers e stored procedures.
 
-## 💻 Tecnologias
+### Tabelas
 
-| Tecnologia | Utilização |
-|---|---|
-| 🐬 **MySQL** | Sistema de gerenciamento do banco |
-| 🖥️ **MySQL Workbench** | Criação, modelagem e gerenciamento |
-| 📄 **SQL** | Linguagem utilizada na implementação |
+**Usuario:** armazena as pessoas que utilizam o sistema, incluindo nome,
+e-mail, setor, tipo e status.
 
----
+**Localizacao:** armazena os locais onde os objetos podem estar, como
+salas, laboratórios, oficinas ou almoxarifados.
 
-## 🗄️ Estrutura do banco
+**Categoria:** organiza os objetos em categorias.
 
-**Banco:** `GestaoEquipamentos`
+**Objeto:** representa os equipamentos ou objetos monitorados pelo
+sistema. Armazena nome, identificação, categoria, localização, estado,
+descrição e data de cadastro.
 
-O banco utiliza:
+**Acao:** armazena os tipos de ações realizadas sobre os objetos, como
+retirada, devolução, manutenção, alteração, transferência e troca.
 
-`PKs` • `FKs` • `Índices` • `Triggers` • `Stored Procedures`
+**Registro:** é uma das principais tabelas do banco. Registra o
+histórico das ações realizadas nos objetos, relacionando usuário, ação,
+objeto, localização anterior e nova, estado anterior e novo, motivo,
+observação e data.
 
-### 📋 Tabelas
+**Evidencia:** permite associar arquivos a um registro, como fotos ou
+documentos relacionados a uma ocorrência.
 
-| Tabela | Função |
-|---|---|
-| 👤 `Usuario` | Armazena os usuários do sistema |
-| 📍 `Localizacao` | Armazena os locais onde os objetos podem estar |
-| 🏷️ `Categoria` | Organiza os objetos por categoria |
-| 📦 `Objeto` | Armazena os equipamentos e objetos monitorados |
-| 🔧 `Acao` | Define os tipos de ações realizadas |
-| 📝 `Registro` | Guarda o histórico das ações realizadas |
-| 📎 `Evidencia` | Relaciona arquivos a registros |
-| 🔔 `Notificacao` | Armazena notificações e alertas |
-| 🔎 `Auditoria` | Registra operações realizadas sobre os objetos |
+**Notificacao:** armazena notificações geradas pelo sistema para
+informar usuários sobre alterações ou problemas.
 
----
+**Auditoria:** registra operações realizadas sobre os objetos, mantendo
+um histórico técnico das alterações.
 
-## 🔗 Relacionamento entre as tabelas
+## Relacionamentos
 
-A estrutura principal funciona da seguinte forma:
+A estrutura principal pode ser representada assim:
 
-```text
-                         ┌──────────────┐
-                         │   Usuario    │
-                         └──────┬───────┘
-                                │
-                                │ realiza
-                                ▼
-┌──────────────┐          ┌──────────────┐          ┌──────────────┐
-│    Objeto    │◄─────────│   Registro   │─────────►│     Acao     │
-└──────┬───────┘          └──────┬───────┘          └──────────────┘
-       │                         │
-       │                         ├──────────► Evidencia
-       │                         │
-       │                         └──────────► Notificacao
-       │
-       ├──────────► Categoria
-       │
-       └──────────► Localizacao
+``` text
+Usuario
+   |
+   | realiza
+   v
+Registro <------ Acao
+   |
+   | relacionado a
+   v
+Objeto
+   |
+   +------ Categoria
+   |
+   +------ Localizacao
 
-Objeto ───────────► Auditoria
+Registro
+   |
+   +------ Evidencia
+   +------ Notificacao
+
+Objeto
+   |
+   +------ Auditoria
 ```
 
-### 🔑 Chaves
+As **Primary Keys (PKs)** identificam cada registro de forma única. As
+**Foreign Keys (FKs)** conectam as tabelas e ajudam a manter a
+integridade referencial.
 
-**Primary Key (PK)** identifica cada registro de forma única.
+## Índices
 
-**Foreign Key (FK)** cria os relacionamentos entre as tabelas e ajuda a manter a integridade dos dados.
+Foram criados índices para melhorar o desempenho das consultas em campos
+utilizados com frequência, como nome de usuário, setor, nome e
+identificação do objeto, localização, estado, objeto relacionado ao
+registro, usuário, data do registro, notificações e auditoria.
 
----
+## Triggers
 
-## 📦 Principais tabelas
+### `trg_objeto_insert`
 
-### 👤 Usuario
+Executada depois da inclusão de um objeto e responsável por registrar
+automaticamente a operação na tabela `Auditoria`.
 
-Armazena as pessoas que utilizam o sistema.
+### `trg_objeto_update`
 
-Possui informações como:
+Executada depois da alteração de um objeto e responsável por registrar a
+alteração na `Auditoria`.
 
-- Nome
-- E-mail
-- Setor
-- Tipo de usuário
-- Status
-- Data de cadastro
+### `trg_registro_insert`
 
-Tipos de usuário:
+Executada quando uma nova ação é registrada. Atualiza automaticamente o
+estado e a localização atual do objeto.
 
-`administrador` • `responsavel` • `colaborador`
+### `trg_registro_problema`
 
-### 📍 Localizacao
+Verifica se o novo estado do objeto é **danificado, indisponível ou
+desaparecido**. Quando isso acontece, cria automaticamente uma
+notificação para usuários ativos que sejam administradores ou
+responsáveis.
 
-Armazena os locais onde os objetos podem estar, como:
+## Stored Procedures
 
-`Sala 1` • `Sala 2` • `Laboratório` • `Oficina` • `Almoxarifado`
+### `sp_registrar_acao`
 
-### 📦 Objeto
+Registra uma nova ação realizada em um objeto e identifica
+automaticamente o estado e a localização anteriores.
 
-Representa os equipamentos ou objetos acompanhados pelo sistema.
-
-Exemplos:
-
-`Impressora` • `Computador` • `Projetor` • `Máquina` • `Ferramenta`
-
-Estados possíveis:
-
-`normal` • `em_uso` • `alterado` • `danificado` • `em_manutencao` • `desaparecido` • `indisponivel`
-
-### 📝 Registro
-
-É o núcleo da rastreabilidade.
-
-Cada registro pode informar:
-
-```text
-USUÁRIO
-   ↓
-AÇÃO
-   ↓
-OBJETO
-   ↓
-LOCAL ANTERIOR → LOCAL NOVO
-   ↓
-ESTADO ANTERIOR → ESTADO NOVO
-   ↓
-MOTIVO + OBSERVAÇÃO
-   ↓
-DATA/HORA
+``` sql
+CALL sp_registrar_acao(1, 2, 3, 2, 'danificado', 'Problema identificado', 'Equipamento apresentou falha');
 ```
 
----
+### `sp_historico_objeto`
 
-## ⚡ Triggers
+Consulta todo o histórico de ações realizadas em determinado objeto.
 
-O banco possui **4 triggers** para automatizar operações.
-
-| Trigger | O que faz |
-|---|---|
-| `trg_objeto_insert` | Registra automaticamente o cadastro de um objeto na auditoria |
-| `trg_objeto_update` | Registra automaticamente alterações realizadas no objeto |
-| `trg_registro_insert` | Atualiza automaticamente o estado e a localização atual do objeto |
-| `trg_registro_problema` | Cria notificações quando um objeto apresenta determinados problemas |
-
-### 🚨 Exemplo
-
-Se um registro informar:
-
-```text
-Estado novo: danificado
-```
-
-a trigger identifica o problema e cria automaticamente uma notificação para usuários ativos que sejam administradores ou responsáveis.
-
----
-
-## ⚙️ Stored Procedures
-
-O banco possui **7 Stored Procedures** para facilitar consultas e operações frequentes.
-
-| Procedure | Função |
-|---|---|
-| `sp_registrar_acao` | Registra uma nova ação em um objeto |
-| `sp_historico_objeto` | Consulta o histórico completo de um objeto |
-| `sp_ultima_acao_objeto` | Descobre quem realizou a última ação |
-| `sp_objetos_por_local` | Lista objetos de uma localização |
-| `sp_objetos_com_problema` | Lista objetos que apresentam problemas |
-| `sp_historico_usuario` | Consulta as ações realizadas por um usuário |
-| `sp_buscar_objeto` | Pesquisa objetos por nome ou identificação |
-
-### 🔎 A consulta principal do projeto
-
-Para descobrir quem mexeu por último em determinado objeto:
-
-```sql
-CALL sp_ultima_acao_objeto(1);
-```
-
-O resultado pode informar:
-
-```text
-Objeto: Impressora 02
-Último usuário: João
-Última ação: Manutenção
-Data: 10/09/2026
-```
-
----
-
-## 📊 Índices
-
-Foram criados índices em campos utilizados frequentemente nas consultas, como:
-
-- Nome do usuário
-- Setor
-- Nome do objeto
-- Identificação
-- Localização
-- Estado
-- Objeto relacionado ao registro
-- Usuário relacionado ao registro
-- Data do registro
-- Notificações
-- Data da auditoria
-
-Os índices ajudam a **melhorar o desempenho das pesquisas**.
-
----
-
-## 🔄 Exemplo de funcionamento
-
-Imagine uma impressora compartilhada.
-
-### 1. Situação inicial
-
-```text
-📦 Objeto: Impressora 02
-📍 Localização: Sala 1
-✅ Estado: Normal
-```
-
-### 2. João realiza uma manutenção
-
-```text
-👤 Usuário: João
-🔧 Ação: Manutenção
-📍 Local anterior: Sala 1
-📍 Local novo: Sala 2
-🔄 Estado anterior: Normal
-⚠️ Estado novo: Em manutenção
-📝 Motivo: Problema no cartucho
-```
-
-### 3. O banco registra a ação
-
-A informação é armazenada na tabela `Registro`.
-
-### 4. A trigger atualiza o objeto
-
-O objeto passa automaticamente para:
-
-```text
-📍 Localização: Sala 2
-⚠️ Estado: Em manutenção
-```
-
-### 5. O histórico pode ser consultado
-
-```sql
+``` sql
 CALL sp_historico_objeto(1);
 ```
 
-E a última ação pode ser identificada com:
+### `sp_ultima_acao_objeto`
 
-```sql
+Mostra a última ação registrada para um objeto, incluindo o usuário
+responsável.
+
+``` sql
 CALL sp_ultima_acao_objeto(1);
 ```
 
-Assim, o banco consegue reconstruir o histórico do objeto.
+Essa procedure está diretamente relacionada à proposta do projeto, pois
+ajuda a responder: **"Quem mexeu nisso por último?"**
 
----
+### `sp_objetos_por_local`
 
-## 🧩 O que cada recurso faz?
+Lista os objetos que estão em determinada localização.
 
-| Recurso | Responsabilidade |
-|---|---|
-| 🔑 **PK** | Identifica registros de forma única |
-| 🔗 **FK** | Relaciona tabelas e mantém integridade referencial |
-| ⚡ **Trigger** | Executa ações automaticamente |
-| ⚙️ **Procedure** | Armazena operações e consultas reutilizáveis |
-| 🚀 **Índice** | Melhora o desempenho das consultas |
-| 📝 **Registro** | Guarda o histórico das ações |
-| 🔎 **Auditoria** | Registra operações realizadas sobre os objetos |
-
----
-
-## 📁 Arquivo do banco
-
-O arquivo principal deste repositório é:
-
-```text
-GestaoEquipamentos.sql
+``` sql
+CALL sp_objetos_por_local(1);
 ```
 
-Ele contém:
+### `sp_objetos_com_problema`
 
-```text
-✓ Criação do banco
-✓ Criação das tabelas
-✓ Primary Keys
-✓ Foreign Keys
-✓ Índices
-✓ Triggers
-✓ Stored Procedures
+Lista objetos que estão danificados, em manutenção, desaparecidos ou
+indisponíveis.
+
+``` sql
+CALL sp_objetos_com_problema();
 ```
 
-### ▶️ Como utilizar
+### `sp_historico_usuario`
 
-1. Abra o **MySQL Workbench**.
-2. Abra o arquivo `GestaoEquipamentos.sql`.
-3. Execute o script.
-4. O banco `GestaoEquipamentos` será criado com sua estrutura completa.
+Mostra as ações realizadas por determinado usuário.
 
----
+``` sql
+CALL sp_historico_usuario(1);
+```
 
-## 🎯 Objetivo final
+### `sp_buscar_objeto`
 
-O banco foi desenvolvido para dar suporte ao projeto:
+Permite pesquisar objetos pelo nome ou pela identificação.
 
-# **Quem Mexeu Nisso?**
+``` sql
+CALL sp_buscar_objeto('Impressora');
+```
 
-A ideia central é permitir que uma organização consiga responder, com base em registros:
+## Exemplo de funcionamento
 
-> **Quem fez? O que fez? Quando fez? Onde estava? Para onde foi? E qual foi o resultado?**
+Imagine uma impressora compartilhada.
 
-Dessa forma, o banco fornece uma base de **rastreabilidade, histórico e controle de alterações** para objetos e equipamentos compartilhados.
+Inicialmente:
 
----
+``` text
+Objeto: Impressora 02
+Localização: Sala 1
+Estado: Normal
+```
 
-## 👨‍💻 Autor
+Um usuário registra uma manutenção:
+
+``` text
+Usuário: João
+Ação: Manutenção
+Local anterior: Sala 1
+Local novo: Sala 2
+Estado anterior: Normal
+Estado novo: Em manutenção
+Motivo: Problema no cartucho
+```
+
+O registro é armazenado na tabela `Registro`. A trigger
+`trg_registro_insert` atualiza automaticamente o objeto para a nova
+localização e o novo estado.
+
+Depois, a procedure `sp_ultima_acao_objeto` pode informar quem realizou
+a última ação.
+
+Assim, o banco mantém uma linha do tempo do objeto e permite descobrir o
+que aconteceu.
+
+## Integridade e rastreabilidade
+
+-   **PK:** identifica registros de forma única.
+-   **FK:** cria relacionamentos e mantém a integridade referencial.
+-   **Índice:** melhora o desempenho das consultas.
+-   **Trigger:** executa ações automaticamente após determinados
+    eventos.
+-   **Stored Procedure:** centraliza operações e consultas frequentes.
+-   **Registro:** mantém o histórico das ações realizadas.
+-   **Auditoria:** mantém o histórico das operações realizadas sobre os
+    objetos.
+
+## Objetivo
+
+O banco foi desenvolvido como base para o projeto **Quem Mexeu Nisso?**,
+cujo foco é solucionar o problema da falta de rastreabilidade em
+ambientes onde equipamentos e objetos são utilizados por várias pessoas.
+
+A ideia é permitir que uma organização consiga reconstruir o histórico
+de um objeto e descobrir:
+
+**quem fez, o que fez, quando fez, onde estava, para onde foi e qual foi
+o resultado da ação.**
+
+## Arquivo do projeto
+
+O arquivo `GestaoEquipamentos.sql` contém a implementação do banco,
+incluindo:
+
+-   Criação do banco
+-   Criação das tabelas
+-   Primary Keys
+-   Foreign Keys
+-   Índices
+-   Triggers
+-   Stored Procedures
+
+Para utilizar o banco, abra o arquivo `GestaoEquipamentos.sql` no
+**MySQL Workbench** e execute o script.
+
+## Autor
 
 **Leonardo Gomes Ferreira**
 
-Projeto acadêmico — Banco de Dados  
-**Quem Mexeu Nisso?**
-
----
-
-<div align="center">
-
-**🛠️ Quem Mexeu Nisso? — Transformando alterações em histórico rastreável.**
-
-</div>
+Projeto acadêmico --- Banco de Dados / Projeto **Quem Mexeu Nisso?**
