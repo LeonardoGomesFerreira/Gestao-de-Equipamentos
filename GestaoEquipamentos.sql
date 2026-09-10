@@ -10,21 +10,21 @@ create table Usuario(
     Tipo enum('administrador','responsavel','colaborador') not null default 'colaborador',
     Status enum('ativo','inativo') not null default 'ativo',
     Data_cadastro datetime not null default current_timestamp
-) engine=InnoDB;
+);
 
 create table Localizacao(
     Id_localizacao int not null auto_increment primary key,
     Nome varchar(150) not null,
     Descricao varchar(300),
     Status enum('ativo','inativo') not null default 'ativo'
-) engine=InnoDB;
+);
 
 create table Categoria(
     Id_categoria int not null auto_increment primary key,
     Nome varchar(100) not null unique,
     Descricao varchar(300),
     Status enum('ativo','inativo') not null default 'ativo'
-) engine=InnoDB;
+);
 
 create table Objeto(
     Id_objeto int not null auto_increment primary key,
@@ -37,14 +37,14 @@ create table Objeto(
     Data_cadastro datetime not null default current_timestamp,
     constraint Fk_objeto_categoria foreign key (Id_categoria) references Categoria(Id_categoria),
     constraint Fk_objeto_localizacao foreign key (Id_localizacao) references Localizacao(Id_localizacao)
-) engine=InnoDB;
+);
 
 create table Acao(
     Id_acao int not null auto_increment primary key,
     Nome varchar(100) not null unique,
     Descricao varchar(300),
     Status enum('ativo','inativo') not null default 'ativo'
-) engine=InnoDB;
+);
 
 create table Registro(
     Id_registro int not null auto_increment primary key,
@@ -63,7 +63,7 @@ create table Registro(
     constraint Fk_registro_acao foreign key (Id_acao) references Acao(Id_acao),
     constraint Fk_registro_local_anterior foreign key (Id_local_anterior) references Localizacao(Id_localizacao),
     constraint Fk_registro_local_novo foreign key (Id_local_novo) references Localizacao(Id_localizacao)
-) engine=InnoDB;
+);
 
 create table Evidencia(
     Id_evidencia int not null auto_increment primary key,
@@ -73,7 +73,7 @@ create table Evidencia(
     Caminho_arquivo varchar(500),
     Data_upload datetime not null default current_timestamp,
     constraint Fk_evidencia_registro foreign key (Id_registro) references Registro(Id_registro) on delete cascade
-) engine=InnoDB;
+);
 
 create table Notificacao(
     Id_notificacao int not null auto_increment primary key,
@@ -86,7 +86,7 @@ create table Notificacao(
     Data_notificacao datetime not null default current_timestamp,
     constraint Fk_notificacao_usuario foreign key (Id_usuario) references Usuario(Id_usuario),
     constraint Fk_notificacao_registro foreign key (Id_registro) references Registro(Id_registro)
-) engine=InnoDB;
+);
 
 create table Auditoria(
     Id_auditoria int not null auto_increment primary key,
@@ -97,7 +97,7 @@ create table Auditoria(
     Data_operacao datetime not null default current_timestamp,
     constraint Fk_auditoria_objeto foreign key (Id_objeto) references Objeto(Id_objeto),
     constraint Fk_auditoria_usuario foreign key (Id_usuario) references Usuario(Id_usuario)
-) engine=InnoDB;
+);
 
 create index idx_usuario_nome on Usuario(Nome);
 create index idx_usuario_setor on Usuario(Setor);
